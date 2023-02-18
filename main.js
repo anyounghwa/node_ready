@@ -187,9 +187,9 @@ var app = http.createServer(function(request,response){
       fs.readdir('./data', function(error, filelist){
         var title = '좋아하는 노래를 추가해 보세요';
         var description = `
-        <form action="http://localhost:3000/create_process" merhod="post">
+        <form action="http://localhost:3000/create_process" method="post">
           <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
-          <p style="margin-bottom:10px;">제목 : <input type="text" name="tite" size="80" placeholder="제목을 적으세요"></p>
+          <p style="margin-bottom:10px;">제목 : <input type="text" name="title" size="80" placeholder="제목을 적으세요"></p>
           <p>내용 : <textarea name="description" rows="20" cols="82" placeholder="내용을 적으세요"></textarea></p>
           <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
         </form>
@@ -209,10 +209,12 @@ var app = http.createServer(function(request,response){
         var post = qs.parse(body);
         var title = post.title;
         var description = post.description;
-        console.log(post);
-      });
-      response.writeHead(200);
-      response.end('success');
+        console.log(title);
+        fs.writeFile(`data/${title}`, description, 'utf-8', function(err){
+          response.writeHead(302, {Location:`/?id=${title}`});
+          response.end();
+        })
+      });   
    }
    else {
     response.writeHead(404);
