@@ -61,6 +61,18 @@ function templateHTML(title,list, body) {
         font-weight: bold;
     }
     
+    nav>p {
+      margin-top:100px;
+      text-align:right;
+      padding-right:20px;
+      box-sizing:border-box;
+    }
+    nav>p>a {
+      padding:5px;
+      border-radius:5px;
+      background-color:#125847;
+      color:#fff;
+    }
     section {
         width:800px;
         padding-left: 20px;
@@ -78,6 +90,10 @@ function templateHTML(title,list, body) {
 
     section>p {
       color:#569871;
+    }
+
+    section>form>p>input {
+      wid
     }
     .contents::after {
         content: "";
@@ -109,6 +125,7 @@ function templateHTML(title,list, body) {
     <div class="contents">
       <nav>
         ${list}
+        <p><a href="/create">글쓰기</a></p>
       </nav>
       <section>
         ${body}
@@ -126,7 +143,7 @@ function templateList(filelist) {
     var list = '<ol>';
     var i = 0;
     while( i < filelist.length) {
-      list = list + `<li><a href="?id=${filelist[i]}">${filelist[i]}</a></li>`;
+      list = list + `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
       i++;
     }
     list = list + '</ol>';
@@ -164,7 +181,25 @@ var app = http.createServer(function(request,response){
       });
     }
     
-   }else {
+   }
+   else if(pathname == '/create') {
+      fs.readdir('./data', function(error, filelist){
+        var title = '좋아하는 노래를 추가해 보세요';
+        var description = `
+        <form action="http://localhost:3000/create_process" merhod="post">
+          <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
+          <p style="margin-bottom:10px;">제목 : <input type="text" name="tite" size="80" placeholder="제목을 적으세요"></p>
+          <p>내용 : <textarea name="description" rows="20" cols="82" placeholder="내용을 적으세요"></textarea></p>
+          <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
+        </form>
+        `;
+        var list = templateList(filelist);
+        var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`)
+        response.writeHead(200);
+        response.end(template);
+      });   
+   }
+   else {
     response.writeHead(404);
     response.end('Not found');
    }
