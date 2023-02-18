@@ -3,7 +3,7 @@ var fs = require('fs');
 var url = require('url');
 var qs = require('querystring');
 
-function templateHTML(title,list, body) {
+function templateHTML(title,list, body, control) {
   return  `
   <!doctype html>
   <html>
@@ -34,6 +34,7 @@ function templateHTML(title,list, body) {
     header>h1 {
         line-height: 100px;
         margin-left: 10px;
+        float:left
     }
     
     .contents {
@@ -73,6 +74,8 @@ function templateHTML(title,list, body) {
       border-radius:5px;
       background-color:#125847;
       color:#fff;
+      display:inline-block;
+      margin:5px;
     }
     section {
         width:800px;
@@ -122,11 +125,12 @@ function templateHTML(title,list, body) {
   <body>
     <header>
       <h1><a href="/">WEB</a></h1>
+      
     </header>
     <div class="contents">
       <nav>
         ${list}
-        <p><a href="/create">글쓰기</a></p>
+        ${control}
       </nav>
       <section>
         ${body}
@@ -165,7 +169,7 @@ var app = http.createServer(function(request,response){
         var title = 'welcome';
         var description = '메인화면입니다^^ 반갑습니다^^';
         var list = templateList(filelist);
-        var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`)
+        var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<p><a href="/create">글쓰기</a></p>`)
         response.writeHead(200);
         response.end(template);
      });       
@@ -175,7 +179,7 @@ var app = http.createServer(function(request,response){
         fs.readFile(`data/${queryData.id}`,'utf-8',function(err, description){
           var title = queryData.id;
           var list = templateList(filelist)
-          var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`)
+          var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<p><a href="/create">글쓰기</a><a href="/update?id=${title}">수정하기</a></p>`)
           response.writeHead(200);
           response.end(template);
         });
@@ -187,15 +191,14 @@ var app = http.createServer(function(request,response){
       fs.readdir('./data', function(error, filelist){
         var title = '좋아하는 노래를 추가해 보세요';
         var description = `
-        <form action="http://localhost:3000/create_process" method="post">
-          <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
-          <p style="margin-bottom:10px;">제목 : <input type="text" name="title" size="80" placeholder="제목을 적으세요"></p>
-          <p>내용 : <textarea name="description" rows="20" cols="82" placeholder="내용을 적으세요"></textarea></p>
-          <p style="margin-top:10px; text-align:right;"><input type="submit" value="글쓰기"></p>
+        <form action="/create_process" method="post">
+          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" size="85" placeholder="제목을 적으세요"></p>
+          <p>내용 : <textarea name="description" rows="20" cols="80" placeholder="내용을 적으세요"></textarea></p>
+          <p style="margin-top:10px; text-align:right;"><input type="submit" value="전송"></p>
         </form>
         `;
         var list = templateList(filelist);
-        var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`)
+        var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`,'')
         response.writeHead(200);
         response.end(template);
       });   
@@ -216,6 +219,24 @@ var app = http.createServer(function(request,response){
         })
       });   
    }
+   else if(pathname == '/update') {
+    fs.readdir('./data', function(error, filelist){
+      fs.readFile(`data/${queryData.id}`,'utf-8',function(err, description){
+        var title = queryData.id;
+        var list = templateList(filelist)
+        var template = templateHTML(title, list, `
+        <form action="/update_process" method="post">
+          <input type="hidden" name="id" value="${title}">
+          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" size="85" placeholder="제목을 적으세요" value="${title}"></p>
+          <p>내용 : <textarea name="description" rows="20" cols="80" placeholder="내용을 적으세요">${description}</textarea></p>
+          <p style="margin-top:10px; text-align:right;"><input type="submit" value="수정"></p>
+        </form>
+        `, ``)
+        response.writeHead(200);
+        response.end(template);
+      });
+    });
+ }
    else {
     response.writeHead(404);
     response.end('Not found');
