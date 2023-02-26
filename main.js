@@ -26,7 +26,7 @@ function templateHTML(title,list, body, control) {
     }
     
     header {
-        width:1000px;
+        width:100%;
         height:100px;
         border-bottom: 1px solid #ccc;
     }
@@ -38,13 +38,13 @@ function templateHTML(title,list, body, control) {
     }
     
     .contents {
-        width:1000px;
+        width:100%;
         min-height: 600px;
         padding-top: 20px;
     }
     
     nav {
-        width: 200px;
+        width: 20%;
         min-height: 600px;
         float: left;
         border-right: 1px solid #ccc;
@@ -78,7 +78,7 @@ function templateHTML(title,list, body, control) {
       margin:5px;
     }
     section {
-        width:800px;
+        width:80%;
         padding-left: 20px;
         padding-right: 20px;
         float: left;
@@ -106,8 +106,7 @@ function templateHTML(title,list, body, control) {
     }
     
     footer {
-      
-        width:1000px;
+        width:100%;
         height: 50px;
         margin-top: 20px;
         border-top: 1px solid #ccc;
@@ -192,9 +191,9 @@ var app = http.createServer(function(request,response){
         var title = '좋아하는 노래를 추가해 보세요';
         var description = `
         <form action="/create_process" method="post">
-          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" size="85" placeholder="제목을 적으세요"></p>
-          <p>내용 : <textarea name="description" rows="20" cols="80" placeholder="내용을 적으세요"></textarea></p>
-          <p style="margin-top:10px; text-align:right;"><input type="submit" value="전송"></p>
+          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" placeholder="제목을 적으세요" style="width:80%;"></p>
+          <p>내용 : <textarea name="description" rows="20" placeholder="내용을 적으세요" style="width:80%;"></textarea></p>
+          <p style="margin-top:10px; text-align:right; padding-right:20px;"><input type="submit" value="전송"></p>
         </form>
         `;
         var list = templateList(filelist);
@@ -227,16 +226,35 @@ var app = http.createServer(function(request,response){
         var template = templateHTML(title, list, `
         <form action="/update_process" method="post">
           <input type="hidden" name="id" value="${title}">
-          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" size="85" placeholder="제목을 적으세요" value="${title}"></p>
-          <p>내용 : <textarea name="description" rows="20" cols="80" placeholder="내용을 적으세요">${description}</textarea></p>
-          <p style="margin-top:10px; text-align:right;"><input type="submit" value="수정"></p>
+          <p style="margin-bottom:10px; margin-top:20px;">제목 : <input type="text" name="title" placeholder="제목을 적으세요" value="${title}" style="width:80%;"></p>
+          <p>내용 : <textarea name="description" rows="20" placeholder="내용을 적으세요"  style="width:80%;">${description}</textarea></p>
+          <p style="margin-top:10px; text-align:right; padding-right:20px;"><input type="submit" value="수정"></p>
         </form>
         `, ``)
         response.writeHead(200);
         response.end(template);
       });
-    });
+    }); 
  }
+ else if(pathname == '/update_process') {
+  var body = '';
+  request.on('data', function(data){
+    body = body + data;
+  });
+  request.on('end', function(data){
+    var post = qs.parse(body);
+    var id = post.id;
+    var title = post.title;
+    var description = post.description;
+    // console.log(id);
+    fs.rename(`data/${id}`, `data/${title}` ,function(error){
+      fs.writeFile(`data/${title}`, description, 'utf-8', function(err){
+        response.writeHead(302, {Location:`/?id=${title}`});
+        response.end();
+      })
+    })
+  });   
+}
    else {
     response.writeHead(404);
     response.end('Not found');
