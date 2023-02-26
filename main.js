@@ -77,6 +77,24 @@ function templateHTML(title,list, body, control) {
       display:inline-block;
       margin:5px;
     }
+
+    .btn_delete {
+      text-align:right;
+      padding-right:20px;
+      box-sizing:border-box;
+    }
+
+    .btn_delete>input {
+      padding:6px;
+      border-radius:5px;
+      background-color:#125847;
+      color:#fff;
+      display:inline-block;
+      margin:5px;
+      border:0;
+      font-size:1.0em;
+    }
+
     section {
         width:80%;
         padding-left: 20px;
@@ -178,7 +196,12 @@ var app = http.createServer(function(request,response){
         fs.readFile(`data/${queryData.id}`,'utf-8',function(err, description){
           var title = queryData.id;
           var list = templateList(filelist)
-          var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<p><a href="/create">글쓰기</a><a href="/update?id=${title}">수정하기</a></p>`)
+          var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`, `<p><a href="/create">글쓰기</a><a href="/update?id=${title}">수정하기</a>
+          <form class="btn_delete" action="delete_process" method="post">
+            <input type="hidden" name="id" value="${title}">
+            <input type="submit" value="삭제하기">
+          </form>
+          `)
           response.writeHead(200);
           response.end(template);
         });
@@ -253,6 +276,22 @@ var app = http.createServer(function(request,response){
         response.end();
       })
     })
+  });   
+}
+else if(pathname === '/delete_process') {
+  var body = '';
+  request.on('data', function(data){
+    body = body + data;
+  });
+  request.on('end', function(){
+    var post = qs.parse(body);
+    var id = post.id;
+    console.log(post);
+    fs.unlink(`data/${id}`, function(){
+        response.writeHead(302, {Location:`/`});
+        response.end();
+      })
+    
   });   
 }
    else {
